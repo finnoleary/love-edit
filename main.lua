@@ -1,9 +1,10 @@
 function love.load()
 	file = io.tmpfile()
 	COMMAND = 0
-	INSERT = 1
-	VISUAL = 2
-	COMMAND_GET = 3
+	COMMAND_GET = 1
+	INSERT = 2
+	VISUAL = 3
+	VISUAL_LINE = 4
 	mode = COMMAND
 	command_line = "-- COMMAND --"
 	command_input = ""
@@ -68,6 +69,16 @@ function love.textinput(key)
 			command_input = command_input .. key
 		elseif key == 'h' then --and h >= 1 then
 			column = column - 1
+		elseif key == 'j' and line < #lines then
+			line = line + 1
+			if lines[line]:len() < column then
+				column = lines[line]:len()+1
+			end
+		elseif key == 'k' then
+			line = line - 1
+			if lines[line]:len() < column then
+				column = lines[line]:len()+1
+			end
 		elseif key == 'l' and column <= lines[line]:len() then
 			column = column + 1
 		end
@@ -91,14 +102,14 @@ function love.draw()
 	local i = 10
 	local inc = 20
 	for each, l in pairs(lines) do
-		-- if each == line and mode == INSERT then
+		if each == line then
 			love.graphics.print(l:sub(1, column) 
 								.. "|"
 								..lines[line]:sub(column+1)
 								, 10, i)
-		-- else
-			-- love.graphics.print(l, 10, i)	
-		-- end
+		else
+			love.graphics.print(l, 10, i)	
+		end
 		
 		i = i + inc
 	end
