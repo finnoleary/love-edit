@@ -10,9 +10,9 @@ function love.load()
 
 	screen_width = love.window.getWidth()
 	screen_height = love.window.getHeight()
+	lines = {"_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _"}
 	line = 1
-	column = 1
-	lines = {""}
+	column = lines[line]:len()+1
 	love.graphics.setBackgroundColor(33, 11, 22)
 end
 
@@ -28,6 +28,10 @@ function love.keypressed(key, isrep)
 				line = line - 1
 				table.remove(lines, line + 1)
 				column = 1
+			elseif column < lines[line]:len() then
+				lines[line] = 	lines[line]:sub(1, column-1)
+								.. lines[line]:sub(column+1)
+				column = column - 1
 			elseif lines[line]:len() > 0 then
 				lines[line] = lines[line]:sub(1, lines[line]:len()-1)
 				column = column - 1
@@ -41,12 +45,9 @@ function love.keypressed(key, isrep)
 			command_line = "-- COMMAND --"
 		end
 	elseif mode == COMMAND_GET then
-		-- if key == "backspace" and command_input:len() > 2 then
-		-- 	command_input = command_input:sub(1, command_input:len()-2) .. '|'
 		if key == "backspace" and command_input:len() > 1 then
 			command_input = command_input:sub(1, command_input:len()-1)
 		elseif key == "return" then
-			-- assert(loadstring(string.sub(command_input, 2, command_input:len()-1)))()
 			assert(loadstring(string.sub(command_input, 2)))()
 			command_input = ""
 		elseif key == "escape" then
@@ -65,21 +66,24 @@ function love.textinput(key)
 		elseif key == ":" then
 			mode = COMMAND_GET
 			command_input = command_input .. key
+		elseif key == 'h' then --and h >= 1 then
+			column = column - 1
+		elseif key == 'l' and column <= lines[line]:len() then
+			column = column + 1
 		end
 	elseif mode == COMMAND_GET then
-		local x = 0
-		-- if command_input:len() > 1 then
-		-- 	command_input = command_input:sub(0, command_input:len()-1) 
-		-- 					.. key 
-		-- 					.. '|'
-		-- else
-			command_input = command_input:sub(0, command_input:len()) 
-							.. key 
-		--					.. '|'
-		-- end
+		command_input = command_input:sub(0, command_input:len()) 
+						.. key 
 	elseif mode == INSERT then
-		lines[line] = lines[line] .. key
-		column = column + 1
+		if column < lines[line]:len() then
+			lines[line] = 	lines[line]:sub(1, column)
+							.. key
+							.. lines[line]:sub(column+1)
+			column = column + 1
+		else
+			lines[line] = lines[line] .. key
+			column = column + 1
+		end
 	end
 end
 
@@ -87,15 +91,20 @@ function love.draw()
 	local i = 10
 	local inc = 20
 	for each, l in pairs(lines) do
-		if each == line and mode == INSERT then
-			love.graphics.print(l .. "|", 10, i)
-		else 
-			love.graphics.print(l, 10, i)
-		end
+		-- if each == line and mode == INSERT then
+			love.graphics.print(l:sub(1, column) 
+								.. "|"
+								..lines[line]:sub(column+1)
+								, 10, i)
+		-- else
+			-- love.graphics.print(l, 10, i)	
+		-- end
+		
 		i = i + inc
 	end
 	love.graphics.print(command_line, 10, screen_height-50)
 	love.graphics.print("L: " .. #lines, 140, screen_height-50)
 	love.graphics.print("C: " .. column, 180, screen_height-50)
+	love.graphics.print("LL: " .. lines[line]:len()+1, 220, screen_height-50)
 	love.graphics.print(command_input, 10, screen_height-30)
 end
