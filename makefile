@@ -1,0 +1,2 @@
+build:
+	love ../text
