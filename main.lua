@@ -16,6 +16,7 @@ function variables()
 	command_mode = false
 	command_input = ""
 	buffer_uno = {""}
+	current_file = "/home/fao/Desktop/test.txt"
 	lines = buffer_uno
 	cursor_uno = {
 		line = 1,
@@ -33,11 +34,12 @@ function love.keypressed(key, isrep)
 		if key == m.keys.delete then --and command_input:len() > 1 then
 			command_input = command_input:sub(1, command_input:len()-1)
 		elseif key == m.keys.command_enter then
-			-- assert(loadstring(string.sub(command_input, 2)))()
+			print(command_inputs)
 			assert(loadstring(command_input))()
 			command_input = ""
 			command_mode = false
 		end
+		vi:command_mode(key, isrep)
 	else
 		m:keypress(key, isrep)
 	end
@@ -54,5 +56,5 @@ end
 
 function love.draw()
 	m:draw()
-	love.graphics.print("Mode : " .. m.modename, 400, screen_height-50)
+	love.graphics.print("Mode : " .. m.modename, 660, screen_height-50)
 end

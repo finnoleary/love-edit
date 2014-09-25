@@ -37,12 +37,18 @@ function vi:keypress(key, is_repeat)
 			vi.mode = vi.COMMAND
 			vi.command_line = "-- COMMAND --"
 		end
-	elseif vi.mode == vi.COMMAND_GET then
-		if key == "escape" then
-		 	command_input = ""
-		 	command_mode = false
-		 	vi.mode = 0
-		end
+	end
+end
+
+function vi:command_mode(key, is_repeat)
+	if key == m.keys.command then
+	 	command_input = ""
+	 	command_mode = false
+	 	vi.mode = vi.COMMAND
+		vi.command_line = "-- COMMAND --"
+	elseif key == m.keys.command_enter then
+		vi.mode = vi.COMMAND
+		vi.command_line = "-- COMMAND --"
 	end
 end
 
@@ -58,12 +64,16 @@ function vi:textin(key)
 			command_mode = true
 			-- command_input = command_input .. key
 		elseif key == m.keys.right then --and h >= 1 thhen
+			print("right")
 			editor:move_right(c)
 		elseif key == m.keys.down then
+			print("down")
 			editor:move_down(c)
 		elseif key == m.keys.up then
+			print("up")
 			editor:move_up(c)
 		elseif key == m.keys.left then
+			print("left")
 			editor:move_left(c)
 		end
 
@@ -90,10 +100,10 @@ function vi:draw()
 	end
 	love.graphics.print(vi.command_line, 10, screen_height-50)
 	love.graphics.print("L: " .. c.line, 140, screen_height-50)
-	love.graphics.print("C: " .. c.column, 180, screen_height-50)
-	love.graphics.print("LL: " .. #lines, 220, screen_height-50)
+	love.graphics.print("C: " .. c.column, 200, screen_height-50)
+	love.graphics.print("LL: " .. #lines, 260, screen_height-50)
 	if command_mode == true then
-		love.graphics.print("> " .. command_input .. "|", 10, screen_height-30)
+		love.graphics.print(":" .. command_input .. "|", 10, screen_height-30)
 	else 
 		love.graphics.print(command_input, 10, screen_height-30)
 	end
