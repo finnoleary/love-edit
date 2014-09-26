@@ -7,8 +7,9 @@ function love.load()
 	screen_height = love.window.getHeight()
 	variables()
 	require 'vi'
-	m = vi
-	vi:onload()
+	require 'norm'
+	m = norm
+	m:onload()
 	love.graphics.setBackgroundColor(33, 11, 22)
 end
 
@@ -29,9 +30,8 @@ function love.update(dt)
 end
 
 function love.keypressed(key, isrep)
-	-- print("keypressed: " .. key)
-	if command_mode == true then -- This bit should be built into the editor
-		if key == m.keys.delete then --and command_input:len() > 1 then
+	if command_mode == true then
+		if key == m.keys.delete then
 			command_input = command_input:sub(1, command_input:len()-1)
 		elseif key == m.keys.command_enter then
 			print(command_input)
@@ -45,9 +45,8 @@ function love.keypressed(key, isrep)
 					command_mode = false
 				end
 			end
-
 		end
-		vi:command_mode(key, isrep)
+		m:command_mode(key, isrep)
 	else
 		m:keypress(key, isrep)
 	end

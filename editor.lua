@@ -130,6 +130,10 @@ function editor:switch_cursor(c)
 	m.cursor = c
 end
 
+function editor:switch_mode(mode)
+	m = mode
+end
+
 function editor:close()
 	love.event.quit()
 end
