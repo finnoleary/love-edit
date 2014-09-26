@@ -2,6 +2,7 @@ norm = {
 	modename = "Normal",
 
 	cursor = cursor_uno,
+	show_line_num = false,
 	keys = {
 		up = "up",
 		down = "down",
@@ -66,16 +67,24 @@ function norm:draw()
 	local i = 10
 	local inc = 20
 	local lineno = 1
+	local x
+	if m.show_line_num == true then
+		x = 40
+	else
+		x = 10
+	end
 	for each, l in pairs(lines) do
-		love.graphics.print(lineno .. "  ", 10, i)
+		if m.show_line_num == true then
+			love.graphics.print(lineno .. "  ", 10, i)
+		end
 
 		if each == c.line then
 			love.graphics.print(l:sub(1, c.column-1) 
 								.. "|"
 								..lines[c.line]:sub(c.column),
-								40, i)
+								x, i)
 		else
-			love.graphics.print(l, 40, i)
+			love.graphics.print(l, x, i)
 		end
 		i = i + inc
 		lineno = lineno + 1

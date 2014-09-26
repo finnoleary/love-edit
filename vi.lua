@@ -115,17 +115,29 @@ function vi:draw()
 	local c = vi.cursor
 	local i = 10
 	local inc = 20
+	local lineno = 1
+	local x
+	if m.show_line_num == true then
+		x = 40
+	else
+		x = 10
+	end
 	for each, l in pairs(lines) do
+		if m.show_line_num == true then
+			love.graphics.print(lineno .. "  ", 10, i)
+		end
+
 		if each == c.line then
 			love.graphics.print(l:sub(1, c.column-1) 
 								.. "|"
-								..lines[c.line]:sub(c.column)
-								, 10, i)
+								..lines[c.line]:sub(c.column), 
+								x, i)
 		else
-			love.graphics.print(l, 10, i)	
+			love.graphics.print(l, x, i)	
 		end
 		
 		i = i + inc
+		lineno = lineno + 1
 	end
 	love.graphics.print(vi.command_line, 10, screen_height-50)
 	love.graphics.print("L: " .. c.line, 140, screen_height-50)
