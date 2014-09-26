@@ -34,8 +34,10 @@ function love.keypressed(key, isrep)
 		if key == m.keys.delete then --and command_input:len() > 1 then
 			command_input = command_input:sub(1, command_input:len()-1)
 		elseif key == m.keys.command_enter then
-			print(command_inputs)
-			assert(loadstring(command_input))()
+			print(command_input)
+			if m:command_enter(command_input) then
+				assert(loadstring(command_input))()
+			end
 			command_input = ""
 			command_mode = false
 		end

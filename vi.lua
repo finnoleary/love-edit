@@ -15,8 +15,8 @@ vi = {
 		command_get = ":",
 		up = "k",
 		down = "j",
-		left = "l",
-		right = "h",
+		left = "h",
+		right = "l",
 		delete = "backspace",
 		newline = "return",
 		command_enter = "return"
@@ -52,6 +52,22 @@ function vi:command_mode(key, is_repeat)
 	end
 end
 
+function vi:command_enter(s)
+	if s:sub(1, 1) == "w" then
+		if s:sub(1, 2) == "wq" then
+			editor:save_file(s:sub(4))
+			editor:close()
+		else
+			editor:save_file(s:sub(3))
+		end
+		return nil
+	elseif s:sub(1, 1) == "q" then
+		editor:close()
+		return nil
+	end
+	return true
+end
+
 function vi:textin(key)
 	local c = vi.cursor
 	if vi.mode == vi.COMMAND then
@@ -64,16 +80,16 @@ function vi:textin(key)
 			command_mode = true
 			-- command_input = command_input .. key
 		elseif key == m.keys.right then --and h >= 1 thhen
-			print("right")
+			-- print("right")
 			editor:move_right(c)
 		elseif key == m.keys.down then
-			print("down")
+			-- print("down")
 			editor:move_down(c)
 		elseif key == m.keys.up then
-			print("up")
+			-- print("up")
 			editor:move_up(c)
 		elseif key == m.keys.left then
-			print("left")
+			-- print("left")
 			editor:move_left(c)
 		end
 
@@ -88,9 +104,9 @@ function vi:draw()
 	local inc = 20
 	for each, l in pairs(lines) do
 		if each == c.line then
-			love.graphics.print(l:sub(1, c.column) 
+			love.graphics.print(l:sub(1, c.column-1) 
 								.. "|"
-								..lines[c.line]:sub(c.column+1)
+								..lines[c.line]:sub(c.column)
 								, 10, i)
 		else
 			love.graphics.print(l, 10, i)	

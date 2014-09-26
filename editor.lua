@@ -4,9 +4,9 @@ editor = {}
 
 function editor:insert(c, s)
 	if c.column < lines[c.line]:len() then
-		lines[c.line] = lines[c.line]:sub(1, c.column)
+		lines[c.line] = lines[c.line]:sub(1, c.column-1)
 						.. s
-						.. lines[c.line]:sub(c.column+1)
+						.. lines[c.line]:sub(c.column)
 		c.column = c.column + s:len()
 	else
 		lines[c.line] = lines[c.line] .. s
@@ -45,8 +45,8 @@ function editor:delete_char(c)
 		c.column = lines[c.line]:len()
 	end
 	if c.column < lines[c.line]:len() then
-		lines[c.line] = lines[c.line]:sub(1, c.column-1)
-						.. lines[c.line]:sub(c.column+1)
+		lines[c.line] = lines[c.line]:sub(1, c.column-2)
+						.. lines[c.line]:sub(c.column)
 		c.column = c.column - 1
 
 	elseif c.column == lines[c.line]:len() then
@@ -56,20 +56,18 @@ function editor:delete_char(c)
 end
 
 function editor:move_right(c)
-	if c.column <= lines[c.line]:len()+1 and c.column > 1 then
-		c.column = c.column - 1
+	if c.column <= lines[c.line]:len() and c.column >= 1 then
+		c.column = c.column + 1
 	else
-		-- print("Unable to go left!")
+		-- print("Unable to go right!")
 		-- print("c.column :: " .. c.column)
 		-- print("lines[c.line]:len() :: " .. lines[c.line]:len())
 	end
 end
 
 function editor:move_left(c)
-	print("right1")
 	if c.column > 1 then
-		print("right2")
-		c.column = c.column + 1
+		c.column = c.column - 1
 	end
 end
 
@@ -91,17 +89,20 @@ function editor:move_up(c)
 	end
 end
 
-function editor:open_file(filename)
-	local file = io.open(filename, "r+")
-	local buffer = {}
-	local l
-	for l in file:lines() do 
-		table.insert(buffer, line)
+function editor:open_file(f)
+	if f == "" or f == nil then
+		f = current_file
+	else
+		current_file = f
 	end
+	local b = {}
+	for l in io.lines(f) do 
+		table.insert(b, l)
+		print(l)
+	end
+	lines = b
 	cursor_uno.line = 1
 	cursor_uno.column = 1
-	file:close()
-	return buffer
 end
 
 function editor:save_file(f)
@@ -123,4 +124,8 @@ end
 
 function editor:switch_cursor(c)
 	m.cursor = c
+end
+
+function editor:close()
+	love.event.quit()
 end
