@@ -18,6 +18,10 @@ function editor:append(c, s)
 	lines[c.line] = lines[c.line] .. s
 end
 
+function editor:hello()
+	print("Hello world")
+end
+
 function editor:newline(c)
 	if c.column < lines[c.line]:len() then
 		table.insert(lines, "")
@@ -98,7 +102,7 @@ function editor:open_file(f)
 	local b = {}
 	for l in io.lines(f) do 
 		table.insert(b, l)
-		print(l)
+		-- print(l)
 	end
 	lines = b
 	cursor_uno.line = 1

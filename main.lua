@@ -36,10 +36,16 @@ function love.keypressed(key, isrep)
 		elseif key == m.keys.command_enter then
 			print(command_input)
 			if m:command_enter(command_input) then
-				assert(loadstring(command_input))()
+				if loadstring(command_input) == nil then
+					command_input = "Error with input."
+					command_mode = false
+				else
+					loadstring(command_input)()
+					command_input = ""
+					command_mode = false
+				end
 			end
-			command_input = ""
-			command_mode = false
+
 		end
 		vi:command_mode(key, isrep)
 	else

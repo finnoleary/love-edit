@@ -61,6 +61,18 @@ function vi:command_enter(s)
 			editor:save_file(s:sub(3))
 		end
 		return nil
+	elseif s:sub(1, 1) == "e" then
+		if s:len() > 1 then
+			if s:sub(1, 2) == "e " then 
+				print(s:sub(3))
+				editor:open_file(s:sub(3))
+				return nil
+			elseif s:sub(1, 5) == "edit " then
+				print(s:sub(6))
+				editor:open_file(s:sub(6))
+				return nil
+			end
+		end
 	elseif s:sub(1, 1) == "q" then
 		editor:close()
 		return nil
@@ -76,6 +88,7 @@ function vi:textin(key)
 			vi.command_line = "-- INSERT --"
 		elseif key == m.keys.command_get then
 			vi.mode = vi.COMMAND_GET
+			command_input = ""
 			vi.command_line = "-- COMMAND GET --"
 			command_mode = true
 			-- command_input = command_input .. key
