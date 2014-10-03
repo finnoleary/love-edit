@@ -8,16 +8,18 @@ function love.load()
 	variables()
 	require 'vi'
 	require 'norm'
-	m = norm
+	m = vi
 	m:onload()
 	love.graphics.setBackgroundColor(33, 11, 22)
+	editor:load_init_file()
 end
 
 function variables()	
 	command_mode = false
 	command_input = ""
 	buffer_uno = {""}
-	current_file = "/home/fao/Desktop/test.txt"
+	current_dir = editor:get_homedir()
+	current_file = current_dir .. "filename.txt"
 	lines = buffer_uno
 	cursor_uno = {
 		line = 1,
@@ -44,6 +46,9 @@ function love.keypressed(key, isrep)
 					command_input = ""
 					command_mode = false
 				end
+			else
+				command_input = ""
+				command_mode = false
 			end
 		end
 		m:command_mode(key, isrep)

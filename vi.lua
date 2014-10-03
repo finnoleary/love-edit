@@ -64,18 +64,25 @@ function vi:command_enter(s)
 	elseif s:sub(1, 1) == "e" then
 		if s:len() > 1 then
 			if s:sub(1, 2) == "e " then 
-				print(s:sub(3))
+				-- print(s:sub(3))
 				editor:open_file(s:sub(3))
 				return nil
 			elseif s:sub(1, 5) == "edit " then
-				print(s:sub(6))
+				-- print(s:sub(6))
 				editor:open_file(s:sub(6))
-				return nil
 			end
 		end
 	elseif s:sub(1, 1) == "q" then
 		editor:close()
 		return nil
+	elseif s:sub(1, 2) == "cd" then
+		if s:sub(3) == "" or s:sub(3, 4) == " " then
+			editor:change_dir("~")
+			return nil
+		else
+			editor:change_dir(s:sub(4))
+			return nil
+		end
 	end
 	return true
 end
@@ -91,18 +98,13 @@ function vi:textin(key)
 			command_input = ""
 			vi.command_line = "-- COMMAND GET --"
 			command_mode = true
-			-- command_input = command_input .. key
-		elseif key == m.keys.right then --and h >= 1 thhen
-			-- print("right")
+		elseif key == m.keys.right then
 			editor:move_right(c)
 		elseif key == m.keys.down then
-			-- print("down")
 			editor:move_down(c)
 		elseif key == m.keys.up then
-			-- print("up")
 			editor:move_up(c)
 		elseif key == m.keys.left then
-			-- print("left")
 			editor:move_left(c)
 		end
 

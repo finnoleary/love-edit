@@ -42,15 +42,23 @@ function norm:command_mode(key, is_repeat)
 end
 
 function norm:command_enter(s)
-	if s:sub(1, 6) == "write " then
+	if s:sub(1, 6) == "write" then
 		editor:save_file(s:sub(7))
 		return nil
-	elseif s:sub(1, 5) == "edit " then
+	elseif s:sub(1, 4) == "edit" or s:sub(1, 4) == "open" then
 		editor:open_file(s:sub(6))
 		return nil
 	elseif s:sub(1, 4) == "quit" then
 		editor:close()
 		return nil
+	elseif s:sub(1, 2) == "cd" then
+		if s:sub(3) == "" or s:sub(3, 4) == " " then
+			editor:change_dir("~")
+			return nil
+		else
+			editor:change_dir(s:sub(4))
+			return nil
+		end
 	end
 	return true
 end
