@@ -48,7 +48,7 @@ function editor:delete_char(c)
 	if c.column > lines[c.line]:len() then
 		c.column = lines[c.line]:len()
 	end
-	if c.column < lines[c.line]:len() then
+	if c.column < lines[c.line]:len() and c.column > 1 then
 		lines[c.line] = lines[c.line]:sub(1, c.column-2)
 						.. lines[c.line]:sub(c.column)
 		c.column = c.column - 1
@@ -81,6 +81,9 @@ function editor:move_down(c)
 		if lines[c.line]:len() < c.column then
 			c.column = lines[c.line]:len()+1
 		end
+		if c.line > m.offset+m.maxlines then
+			m.offset = m.offset + 1
+		end
 	end
 end
 
@@ -95,7 +98,6 @@ end
 
 function editor:open_file(f)
 	-- CHECK TO SEE IF IT'S ALIVE FIRST!
-	print(f) 
 	if f == "" or f == nil then
 		f = current_file
 	else
@@ -103,47 +105,42 @@ function editor:open_file(f)
 	end
 	if f:sub(1, 1) == "~" then
 		f = editor:get_homedir() .. f:sub(2)
-		-- print(f)
 	elseif not (f:sub(1, 1) == "/") and -- UNIX or NT?
 		   not (f:sub(2, 2) == ":" and (f:sub(3, 3) == "\\" or 
 		   								f:sub(3, 3) == "/")) then
-		-- print(f)
 		f = editor:current_dir() .. "/" .. f
-		-- print(f)
 	end
 	local b = {}
 	for l in io.lines(f) do 
 		table.insert(b, l)
-		-- print(l)
 	end
 	lines = b
 	m.cursor.line = 1
 	m.cursor.column = 1
+
 end
 
 function editor:save_file(f)
-	print("f: " .. f)
 	if f == "" or f == nil then
 		f = current_file
-		print("1: " .. current_file)
 	else
 		current_file = f
 	end
 	if f:sub(1, 1) == "~" then
 		f = editor:get_homedir() .. f:sub(2)
-		-- print(f)
 	elseif not (f:sub(1, 1) == "/") and -- UNIX or NT?
 		   not (f:sub(2, 2) == ":" and (f:sub(3, 3) == "\\" or 
 		   								f:sub(3, 3) == "/")) then
-		-- print(f)
 		f = editor:current_dir() .. "/" .. f
-		-- print(f)
 	end
 	local file = io.open(f, "w")
 	for each, l in pairs(lines) do 
 		file:write(l .. "\n")
 	end
 	file:close()
+	if command_mode == true then
+		command_input = "Wrote to file: " .. f
+	end
 end
 
 function editor:new_cursor(line, column)
@@ -156,6 +153,11 @@ end
 
 function editor:switch_mode(mode)
 	m = mode
+	if m.onload then
+		m:onload()
+	else
+		command_line = "Unable to load mode! onload() missing!"
+	end
 end
 
 function editor:close()
@@ -165,19 +167,32 @@ end
 function editor:toggle_lines()
 	if m.show_line_num then
 		m.show_line_num = false
-	else
+	end
+	if not m.show_line_num then
 		m.show_line_num = true
 	end
 end
 
-function editor:background_colour(r, g, b, a)
-	love.graphics.setBackgroundColor(r, g, b, a)
+function editor:background_colour(r, g, b)
+	m.col.back = {r=r, g=g, b=b}
 end
 
 -- editor:background_color = editor:background_colour
 
-function editor:text_colour(r, g, b, a)
-	love.graphics.setColor(r, g, b, a) -- soon to be changed
+function editor:text_colour(r, g, b)
+	m.col.text = {r=r, g=g, b=b}
+end
+
+function editor:linenum_colour(r, g, b)
+	m.col.num = {r=r, g=g, b=b}
+end
+
+function editor:status_colour(r, g, b)
+	m.col.stat = {r=r, g=g, b=b}
+end
+
+function editor:command_colour(r, g, b)
+	m.col.comd = {r=r, g=g, b=b}
 end
 
 function editor:get_os()
@@ -202,6 +217,9 @@ function editor:change_dir(s)
 end
 
 function editor:current_dir()
+	if command_mode == true then
+		command_input = "Current dir: " .. current_dir
+	end
 	return current_dir
 end
 
@@ -211,7 +229,6 @@ function editor:load_init_file()
 	for l in io.lines(f) do 
 		commands = commands .. l .. "\n"
 	end
-	-- print(commands)
 	editor:execute(commands)
 end
 

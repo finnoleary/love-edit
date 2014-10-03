@@ -8,8 +8,7 @@ function love.load()
 	variables()
 	require 'vi'
 	require 'norm'
-	m = vi
-	m:onload()
+	editor:switch_mode(norm)
 	love.graphics.setBackgroundColor(33, 11, 22)
 	editor:load_init_file()
 end
@@ -36,18 +35,24 @@ function love.keypressed(key, isrep)
 		if key == m.keys.delete then
 			command_input = command_input:sub(1, command_input:len()-1)
 		elseif key == m.keys.command_enter then
-			print(command_input)
+			local ci = command_input
 			if m:command_enter(command_input) then
 				if loadstring(command_input) == nil then
 					command_input = "Error with input."
 					command_mode = false
 				else
 					loadstring(command_input)()
-					command_input = ""
+					if command_input == ci then
+						command_input = ""
+					end
 					command_mode = false
 				end
 			else
-				command_input = ""
+				if command_input == ci then
+					print(ci)
+					print(command_input)
+					command_input = ""
+				end
 				command_mode = false
 			end
 		end

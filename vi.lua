@@ -8,7 +8,6 @@ vi = {
 	VISUAL_LINE = 4,
 	command_line = "-- COMMAND --",
 	cursor = cursor_uno,
-
 	keys = {
 		insert = "i",
 		command = "escape",
@@ -64,12 +63,11 @@ function vi:command_enter(s)
 	elseif s:sub(1, 1) == "e" then
 		if s:len() > 1 then
 			if s:sub(1, 2) == "e " then 
-				-- print(s:sub(3))
 				editor:open_file(s:sub(3))
 				return nil
 			elseif s:sub(1, 5) == "edit " then
-				-- print(s:sub(6))
 				editor:open_file(s:sub(6))
+				return nil
 			end
 		end
 	elseif s:sub(1, 1) == "q" then
@@ -83,6 +81,9 @@ function vi:command_enter(s)
 			editor:change_dir(s:sub(4))
 			return nil
 		end
+	elseif s == "pwd" then
+		editor:current_dir()
+		return nil
 	end
 	return true
 end
