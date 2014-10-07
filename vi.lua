@@ -8,6 +8,15 @@ vi = {
 	VISUAL_LINE = 4,
 	command_line = "-- COMMAND --",
 	cursor = cursor_uno,
+	maxlines = 25,
+	offset = 1,
+	col = {
+		back = {r=255, g=255, b=255},
+		num = {r=1, g=1, b=1},
+		text = {r=1, g=1, b=1},
+		stat = {r=1, g=1, b=1},
+		comd = {r=1, g=1, b=1}
+	},
 	keys = {
 		insert = "i",
 		command = "escape",
@@ -116,39 +125,52 @@ end
 
 function vi:draw()
 	local c = vi.cursor
+	local col = norm.col
 	local i = 10
 	local inc = 20
 	local lineno = 1
 	local x
-	if m.show_line_num == true then
-		x = 40
-	else
-		x = 10
-	end
-	for each, l in pairs(lines) do
-		if m.show_line_num == true then
-			love.graphics.print(lineno .. "  ", 10, i)
-		end
 
-		if each == c.line then
-			love.graphics.print(l:sub(1, c.column-1) 
-								.. "|"
-								..lines[c.line]:sub(c.column), 
-								x, i)
-		else
-			love.graphics.print(l, x, i)	
-		end
-		
-		i = i + inc
-		lineno = lineno + 1
+	love.graphics.setBackgroundColor(col.back.r, col.back.g, col.back.b)
+	if m.show_line_num == true then
+		x = 70
+		love.graphics.setColor(0, 0, 0)
+		love.graphics.line(x-15, 0, x-15, 540)
+	else
+		x = 20
 	end
+	for j = m.offset, m.offset+m.maxlines do
+		if j <= #lines then
+			if m.show_line_num == true then
+				love.graphics.setColor(col.num.r, col.num.g, col.num.b)
+				love.graphics.print(lineno .. "  ", 10, i)
+			end
+
+			if j == c.line then
+				love.graphics.setColor(col.text.r, col.text.g, col.text.b)
+				love.graphics.print(lines[c.line]:sub(1, c.column-1) 
+									.. "|"
+									..lines[c.line]:sub(c.column),
+									x, i)
+			else
+				love.graphics.setColor(col.text.r, col.text.g, col.text.b)
+				love.graphics.print(lines[j], x, i)
+			end
+			
+			i = i + inc
+			lineno = lineno + 1
+		end
+	end
+	love.graphics.setColor(col.stat.r, col.stat.g, col.stat.b)
 	love.graphics.print(vi.command_line, 10, screen_height-50)
-	love.graphics.print("L: " .. c.line, 140, screen_height-50)
-	love.graphics.print("C: " .. c.column, 200, screen_height-50)
-	love.graphics.print("LL: " .. #lines, 260, screen_height-50)
+	love.graphics.print("Line: " .. c.line, 140, screen_height-50)
+	love.graphics.print("Column: " .. c.column, 240, screen_height-50)
+	love.graphics.print("Max lines: " .. #lines, 360, screen_height-50)
 	if command_mode == true then
+		love.graphics.setColor(col.comd.r, col.comd.g, col.comd.b)
 		love.graphics.print(":" .. command_input .. "|", 10, screen_height-30)
 	else 
+		love.graphics.setColor(col.comd.r, col.comd.g, col.comd.b)
 		love.graphics.print(command_input, 10, screen_height-30)
 	end
 end

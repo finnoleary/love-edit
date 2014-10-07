@@ -1,7 +1,7 @@
 require 'editor'
 
 function love.load()
-	file = io.tmpfile()
+	love.keyboard.setKeyRepeat(true)
 
 	screen_width = love.window.getWidth()
 	screen_height = love.window.getHeight()

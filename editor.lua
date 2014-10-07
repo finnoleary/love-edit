@@ -39,7 +39,7 @@ end
 
 function editor:delete_char(c)
 	-- this whole thing is a kludge
-	if c.column == 1 and #lines > 1 then
+	if c.column == 1 and #lines > 1 and c.line > 1 then
 		c.line = c.line - 1
 		table.remove(lines, c.line + 1)
 		c.column = lines[c.line]:len()+1
@@ -93,6 +93,9 @@ function editor:move_up(c)
 		if lines[c.line]:len() < c.column then
 			c.column = lines[c.line]:len()+1
 		end
+		if c.line < norm.offset then
+			norm.offset = norm.offset - 1
+		end
 	end
 end
 
@@ -108,7 +111,14 @@ function editor:open_file(f)
 	elseif not (f:sub(1, 1) == "/") and -- UNIX or NT?
 		   not (f:sub(2, 2) == ":" and (f:sub(3, 3) == "\\" or 
 		   								f:sub(3, 3) == "/")) then
-		f = editor:current_dir() .. "/" .. f
+		local cd = editor:current_dir()
+		if cd:sub(1, 1) == "/" then
+			print("bloo")
+			f = cd .. f
+			print(f)
+		elseif cd:sub(2, 2) == ":" then
+			f = cd .. "\\" .. f
+		end
 	end
 	local b = {}
 	for l in io.lines(f) do 
@@ -117,7 +127,10 @@ function editor:open_file(f)
 	lines = b
 	m.cursor.line = 1
 	m.cursor.column = 1
-
+	m.offset = 1
+	if command_mode == true then
+		command_input = "Opened " .. f
+	end
 end
 
 function editor:save_file(f)
@@ -131,7 +144,12 @@ function editor:save_file(f)
 	elseif not (f:sub(1, 1) == "/") and -- UNIX or NT?
 		   not (f:sub(2, 2) == ":" and (f:sub(3, 3) == "\\" or 
 		   								f:sub(3, 3) == "/")) then
-		f = editor:current_dir() .. "/" .. f
+		local cd = editor:current_dir()
+		if cd:sub(1, 1) == "/" then
+			f = cd .. "/" .. f
+		elseif cd:sub(2, 2) == ":" then
+			f = cd .. "\\" .. f
+		end
 	end
 	local file = io.open(f, "w")
 	for each, l in pairs(lines) do 
@@ -139,7 +157,7 @@ function editor:save_file(f)
 	end
 	file:close()
 	if command_mode == true then
-		command_input = "Wrote to file: " .. f
+		command_input = "Wrote to " .. f
 	end
 end
 
@@ -210,7 +228,9 @@ end
 
 function editor:change_dir(s)
 	if s:sub(1, 1) == "~" then
+		print(current_dir)
 		current_dir = editor:get_homedir() .. s:sub(2)
+		print(current_dir)
 	else
 		current_dir = s
 	end
@@ -225,6 +245,9 @@ end
 
 function editor:load_init_file()
 	local f = editor:get_homedir() .. "/.leinit"
+	if not f then
+		f = editor:get_homedir() .. "\\leinit~"
+	end
 	commands = ""
 	for l in io.lines(f) do 
 		commands = commands .. l .. "\n"

@@ -3,7 +3,7 @@ norm = {
 
 	cursor = cursor_uno,
 	show_line_num = false,
-	maxlines = 26,
+	maxlines = 25,
 	offset = 1,
 	col = {
 		back = {r=255, g=255, b=255},
@@ -42,9 +42,6 @@ function norm:keypress(key, is_repeat)
 		editor:move_down(c)
 	elseif key == m.keys.up then
 		editor:move_up(c)
-		if c.line < norm.offset then
-			norm.offset = norm.offset - 1
-		end
 	elseif key == m.keys.left then
 		editor:move_left(c)
 	end
@@ -97,15 +94,17 @@ function norm:draw()
 
 	love.graphics.setBackgroundColor(col.back.r, col.back.g, col.back.b)
 	if m.show_line_num == true then
-		x = 40
+		x = 70
+		love.graphics.setColor(0, 0, 0)
+		love.graphics.line(x-15, 0, x-15, 540)
 	else
-		x = 10
+		x = 20
 	end
 	for j = m.offset, m.offset+m.maxlines do
 		if j <= #lines then
 			if m.show_line_num == true then
 				love.graphics.setColor(col.num.r, col.num.g, col.num.b)
-				love.graphics.print(lineno .. "  ", 10, i)
+				love.graphics.print(lineno .. "  ", 20, i)
 			end
 
 			if j == c.line then
@@ -118,6 +117,7 @@ function norm:draw()
 				love.graphics.setColor(col.text.r, col.text.g, col.text.b)
 				love.graphics.print(lines[j], x, i)
 			end
+
 			i = i + inc
 			lineno = lineno + 1
 		end
