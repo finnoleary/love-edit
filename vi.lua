@@ -8,6 +8,7 @@ vi = {
 	VISUAL_LINE = 4,
 	command_line = "-- COMMAND --",
 	cursor = cursor_uno,
+	show_line_num = false,
 	maxlines = 25,
 	offset = 1,
 	col = {
@@ -128,7 +129,7 @@ function vi:draw()
 	local col = norm.col
 	local i = 10
 	local inc = 20
-	local lineno = 1
+	local lineno = m.offset
 	local x
 
 	love.graphics.setBackgroundColor(col.back.r, col.back.g, col.back.b)

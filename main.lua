@@ -49,8 +49,8 @@ function love.keypressed(key, isrep)
 				end
 			else
 				if command_input == ci then
-					print(ci)
-					print(command_input)
+					-- print(ci)
+					-- print(command_input)
 					command_input = ""
 				end
 				command_mode = false

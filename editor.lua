@@ -1,4 +1,4 @@
--- convention: c stands for cursor, s stands for string
+-- convention: c stands for cursor, s stands for string, f for filename
 
 editor = {}
 
@@ -24,25 +24,24 @@ end
 
 function editor:newline(c)
 	if c.column < lines[c.line]:len() then
-		table.insert(lines, "")
-		c.line = c.line + 1
-		lines[c.line] = lines[c.line-1]:sub(c.column+1)
-		lines[c.line-1] = lines[c.line-1]:sub(1, c.column)
-		c.column = lines[c.line]:len()
+		table.insert(lines, c.line+1, "")
+		lines[c.line+1] = lines[c.line]:sub(c.column)
+		lines[c.line] = lines[c.line]:sub(1, c.column-1)
 	else
-		table.insert(lines, "")
-		c.line = c.line + 1
-		c.column = 1
+		table.insert(lines, c.line+1, "")
 	end
-	
+	c.line = c.line + 1
+	c.column = 1
 end
 
 function editor:delete_char(c)
 	-- this whole thing is a kludge
 	if c.column == 1 and #lines > 1 and c.line > 1 then
 		c.line = c.line - 1
+		local tmp = lines[c.line] .. lines[c.line + 1]
 		table.remove(lines, c.line + 1)
 		c.column = lines[c.line]:len()+1
+		lines[c.line] = tmp
 		return
 	end
 	if c.column > lines[c.line]:len() then
@@ -62,10 +61,6 @@ end
 function editor:move_right(c)
 	if c.column <= lines[c.line]:len() and c.column >= 1 then
 		c.column = c.column + 1
-	-- else
-	-- 	print("Unable to go right!")
-	-- 	print("c.column :: " .. c.column)
-	-- 	print("lines[c.line]:len() :: " .. lines[c.line]:len())
 	end
 end
 
@@ -93,37 +88,63 @@ function editor:move_up(c)
 		if lines[c.line]:len() < c.column then
 			c.column = lines[c.line]:len()+1
 		end
-		if c.line < norm.offset then
-			norm.offset = norm.offset - 1
+		if c.line < m.offset then
+			m.offset = m.offset - 1
 		end
 	end
 end
 
+function editor:file_exists(f)
+	local file = io.open(f)
+	if file then
+		file:close()
+		if command_mode == true then
+			command_input = "File " .. f .. " exists."
+		end
+		return true
+	else
+		if command_mode == true then
+			command_input = "File " .. f .. " does not exist."
+		end
+		return false
+	end
+end
+
 function editor:open_file(f)
-	-- CHECK TO SEE IF IT'S ALIVE FIRST!
 	if f == "" or f == nil then
 		f = current_file
 	else
 		current_file = f
 	end
+
 	if f:sub(1, 1) == "~" then
 		f = editor:get_homedir() .. f:sub(2)
-	elseif not (f:sub(1, 1) == "/") and -- UNIX or NT?
+
+	-- Have we been given just a filename?
+	elseif not (f:sub(1, 1) == "/") and
 		   not (f:sub(2, 2) == ":" and (f:sub(3, 3) == "\\" or 
 		   								f:sub(3, 3) == "/")) then
+
 		local cd = editor:current_dir()
-		if cd:sub(1, 1) == "/" then
-			print("bloo")
-			f = cd .. f
-			print(f)
-		elseif cd:sub(2, 2) == ":" then
+		if cd:find("/") then
+			f = cd .. "/" .. f
+		elseif cd:find("\\") then
 			f = cd .. "\\" .. f
 		end
 	end
+	if not editor:file_exists(f) then
+		 if command_mode == true then
+			command_input = "File does not exist"
+		end
+		print("File does not exist")
+		return nil
+	end
+
 	local b = {}
 	for l in io.lines(f) do 
 		table.insert(b, l)
 	end
+ 
 	lines = b
 	m.cursor.line = 1
 	m.cursor.column = 1
@@ -139,23 +160,35 @@ function editor:save_file(f)
 	else
 		current_file = f
 	end
+
 	if f:sub(1, 1) == "~" then
 		f = editor:get_homedir() .. f:sub(2)
-	elseif not (f:sub(1, 1) == "/") and -- UNIX or NT?
+
+	-- Have we been given just a filename?
+	elseif not (f:sub(1, 1) == "/") and
 		   not (f:sub(2, 2) == ":" and (f:sub(3, 3) == "\\" or 
 		   								f:sub(3, 3) == "/")) then
 		local cd = editor:current_dir()
-		if cd:sub(1, 1) == "/" then
+		if cd:find("/") then
 			f = cd .. "/" .. f
-		elseif cd:sub(2, 2) == ":" then
+		elseif cd:find("\\") then
 			f = cd .. "\\" .. f
 		end
 	end
+	if not editor:file_exists(file) then
+		if command_mode == true then
+			command_input = "File does not exist"
+		end
+		print("File does not exist")
+		return nil
+	end
+
 	local file = io.open(f, "w")
 	for each, l in pairs(lines) do 
 		file:write(l .. "\n")
 	end
 	file:close()
+
 	if command_mode == true then
 		command_input = "Wrote to " .. f
 	end
@@ -228,9 +261,9 @@ end
 
 function editor:change_dir(s)
 	if s:sub(1, 1) == "~" then
-		print(current_dir)
+		-- print(current_dir)
 		current_dir = editor:get_homedir() .. s:sub(2)
-		print(current_dir)
+		-- print(current_dir)
 	else
 		current_dir = s
 	end
@@ -266,4 +299,31 @@ end
 
 function editor:interpret(s)
 	m:command_enter(s)
+end
+
+function editor:load_font(f, size)
+	if not editor:file_exists(f) then
+		print("Unable to load_font, file does not exist.")
+		if command_mode == true then
+			command_input = "Unable to load_font, file does not exist."
+		end
+		return nil
+	end
+	local font = love.graphics.newFont(f, size)
+	font:setFilter("nearest", "nearest", 2)
+	return font
+end
+
+function editor:set_font(font)
+	if font == nil then
+		print("Unable to set_font, font is nil")
+		if command_mode == true then
+			command_input = "Unable to set_font, font is nil."
+		end
+		return nil
+	end
+	-- Determine how many lines we can display per screen
+	local h = font:getHeight()
+	-- print(h)
+	love.graphics.setFont(font)
 end
